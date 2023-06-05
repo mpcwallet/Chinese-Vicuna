@@ -1,6 +1,7 @@
 import os
 import sys
 
+import wandb
 import torch
 import torch.nn as nn
 import bitsandbytes as bnb
@@ -27,8 +28,8 @@ parser.add_argument("--wandb", action="store_true", default=False)
 parser.add_argument("--data_path", type=str, default="merge.json")
 parser.add_argument("--output_path", type=str, default="lora-Vicuna")
 parser.add_argument("--model_path", type=str, default="decapoda-research/llama-7b-hf")
-parser.add_argument("--eval_steps", type=int, default=200)
-parser.add_argument("--save_steps", type=int, default=200)
+parser.add_argument("--eval_steps", type=int, default=50) # 200
+parser.add_argument("--save_steps", type=int, default=50) # 200
 parser.add_argument("--test_size", type=int, default=200)
 parser.add_argument("--resume_from_checkpoint", type=str, default=None)
 parser.add_argument("--lora_remote_checkpoint", type=str, default=None)
@@ -51,8 +52,8 @@ LORA_DROPOUT = 0.05
 VAL_SET_SIZE = args.test_size #2000
 USE_8bit = True
 
-if USE_8bit is True:
-    assert bnb.__version__ >= '0.37.2', "Please downgrade bitsandbytes's version, for example: pip install bitsandbytes==0.37.2"
+# if USE_8bit is True:
+#     assert bnb.__version__ >= '0.37.2', "Please downgrade bitsandbytes's version, for example: pip install bitsandbytes==0.37.2"
         
 TARGET_MODULES = [
     "q_proj",
@@ -252,7 +253,7 @@ trainer = transformers.Trainer(
         max_steps=MAX_STEPS,
         learning_rate=LEARNING_RATE,
         fp16=True,
-        logging_steps=20,
+        logging_steps=5,
         evaluation_strategy="steps" if VAL_SET_SIZE > 0 else "no",
         save_strategy="steps",
         eval_steps=args.eval_steps if VAL_SET_SIZE > 0 else None,
@@ -278,7 +279,8 @@ if torch.__version__ >= "2" and sys.platform != "win32":
 
 print("\n If there's a warning about missing keys above, please disregard :)")
 
-trainer.train(resume_from_checkpoint=args.resume_from_checkpoint)
+with wandb.init(project="vicuna-7b-lora-230605a") as run:
+    trainer.train(resume_from_checkpoint=args.resume_from_checkpoint)
 
 model.save_pretrained(OUTPUT_DIR)
 
