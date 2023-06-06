@@ -128,18 +128,19 @@ def evaluate(
     inputs = tokenizer(prompt, return_tensors="pt")
     input_ids = inputs["input_ids"].to(device)
     print(input_ids)
-    # generation_config = GenerationConfig(
-    #     temperature=temperature,
-    #     top_p=top_p,
-    #     top_k=top_k,
-    #     num_beams=num_beams,
-    #     bos_token_id=1,
-    #     eos_token_id=2,
-    #     pad_token_id=0,
-    #     max_new_tokens=max_new_tokens, # max_length=max_new_tokens+input_sequence
-    #     min_new_tokens=min_new_tokens, # min_length=min_new_tokens+input_sequence
-    #     **kwargs,
-    # )
+    generation_config = GenerationConfig(
+        temperature=temperature,
+        top_p=top_p,
+        top_k=top_k,
+        num_beams=num_beams,
+        bos_token_id=1,
+        eos_token_id=2,
+        pad_token_id=0,
+        max_new_tokens=max_new_tokens, # max_length=max_new_tokens+input_sequence
+        min_new_tokens=min_new_tokens, # min_length=min_new_tokens+input_sequence
+        **kwargs,
+    )
+    print(generation_config)
     # with torch.no_grad():
     #     print('torch.no_grad execute...')
     #     if args.use_typewriter:
