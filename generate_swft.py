@@ -182,5 +182,34 @@ def evaluate(
 
 if __name__ == '__main__':
     input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence:Blockware\u2019s team expects Bitcoin\u2019s adoption rate to be faster than previous technologies, but believes it's still in early-stage growth.\\xa0"
-    evaluate(input)
+    # evaluate(input)
+    print('evaluate execute...')
+    prompt = generate_prompt(input)
+    inputs = tokenizer(prompt, return_tensors="pt")
+    input_ids = inputs["input_ids"].to(device)
+    print(input_ids)
+    generation_config = GenerationConfig(
+        temperature=0.1,
+        top_p=0.75,
+        top_k=40,
+        num_beams=4,
+        bos_token_id=1,
+        eos_token_id=2,
+        pad_token_id=0,
+        max_new_tokens=128,  # max_length=max_new_tokens+input_sequence
+        min_new_tokens=1,  # min_length=min_new_tokens+input_sequence
+    )
+    with torch.no_grad():
+        print('torch.no_grad execute...')
+        generation_output = model.generate(
+            input_ids=input_ids,
+            generation_config=generation_config,
+            return_dict_in_generate=True,
+            output_scores=False,
+            repetition_penalty=1.3,
+        )
+        output = generation_output.sequences[0]
+        output = tokenizer.decode(output).split("### Response:")[1].strip()
+        print(output)
+
     print('execute main finished')
