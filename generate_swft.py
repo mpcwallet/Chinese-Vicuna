@@ -124,53 +124,53 @@ def evaluate(
     **kwargs,
 ):
     print('evaluate execute...')
-    prompt = generate_prompt(input)
-    inputs = tokenizer(prompt, return_tensors="pt")
-    input_ids = inputs["input_ids"].to(device)
-    generation_config = GenerationConfig(
-        temperature=temperature,
-        top_p=top_p,
-        top_k=top_k,
-        num_beams=num_beams,
-        bos_token_id=1,
-        eos_token_id=2,
-        pad_token_id=0,
-        max_new_tokens=max_new_tokens, # max_length=max_new_tokens+input_sequence
-        min_new_tokens=min_new_tokens, # min_length=min_new_tokens+input_sequence
-        **kwargs,
-    )
-    with torch.no_grad():
-        print('torch.no_grad execute...')
-        if args.use_typewriter:
-            for generation_output in model.stream_generate(
-                input_ids=input_ids,
-                generation_config=generation_config,
-                return_dict_in_generate=True,
-                output_scores=False,
-                repetition_penalty=float(repetition_penalty),
-            ):
-                outputs = tokenizer.batch_decode(generation_output)
-                show_text = "\n--------------------------------------------\n".join(
-                    [output.split("### Response:")[1].strip().replace('�','')+" ▌" for output in outputs]
-                )
-                # if show_text== '':
-                #     yield last_show_text
-                # else:
-                yield show_text
-            yield outputs[0].split("### Response:")[1].strip().replace('�','')
-        else:
-            print('model.generate execute...')
-            generation_output = model.generate(
-                input_ids=input_ids,
-                generation_config=generation_config,
-                return_dict_in_generate=True,
-                output_scores=False,
-                repetition_penalty=1.3,
-            )
-            output = generation_output.sequences[0]
-            output = tokenizer.decode(output).split("### Response:")[1].strip()
-            print(output)
-            yield output
+    # prompt = generate_prompt(input)
+    # inputs = tokenizer(prompt, return_tensors="pt")
+    # input_ids = inputs["input_ids"].to(device)
+    # generation_config = GenerationConfig(
+    #     temperature=temperature,
+    #     top_p=top_p,
+    #     top_k=top_k,
+    #     num_beams=num_beams,
+    #     bos_token_id=1,
+    #     eos_token_id=2,
+    #     pad_token_id=0,
+    #     max_new_tokens=max_new_tokens, # max_length=max_new_tokens+input_sequence
+    #     min_new_tokens=min_new_tokens, # min_length=min_new_tokens+input_sequence
+    #     **kwargs,
+    # )
+    # with torch.no_grad():
+    #     print('torch.no_grad execute...')
+    #     if args.use_typewriter:
+    #         for generation_output in model.stream_generate(
+    #             input_ids=input_ids,
+    #             generation_config=generation_config,
+    #             return_dict_in_generate=True,
+    #             output_scores=False,
+    #             repetition_penalty=float(repetition_penalty),
+    #         ):
+    #             outputs = tokenizer.batch_decode(generation_output)
+    #             show_text = "\n--------------------------------------------\n".join(
+    #                 [output.split("### Response:")[1].strip().replace('�','')+" ▌" for output in outputs]
+    #             )
+    #             # if show_text== '':
+    #             #     yield last_show_text
+    #             # else:
+    #             yield show_text
+    #         yield outputs[0].split("### Response:")[1].strip().replace('�','')
+    #     else:
+    #         print('model.generate execute...')
+    #         generation_output = model.generate(
+    #             input_ids=input_ids,
+    #             generation_config=generation_config,
+    #             return_dict_in_generate=True,
+    #             output_scores=False,
+    #             repetition_penalty=1.3,
+    #         )
+    #         output = generation_output.sequences[0]
+    #         output = tokenizer.decode(output).split("### Response:")[1].strip()
+    #         print(output)
+    #         yield output
 
 
 if __name__ == '__main__':
