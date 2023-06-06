@@ -180,10 +180,8 @@ def evaluate(
     else:
         print('无异常')
 
-if __name__ == '__main__':
-    input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence:Blockware\u2019s team expects Bitcoin\u2019s adoption rate to be faster than previous technologies, but believes it's still in early-stage growth.\\xa0"
-    input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence: The compensation process is expected to start next week, starting with users who had funds on the bridge \u201cshortly before the shutdown.\u201d"
-    # evaluate(input)
+
+def local_evaluate(input):
     print('evaluate execute...')
     prompt = generate_prompt(input)
     inputs = tokenizer(prompt, return_tensors="pt")
@@ -213,4 +211,10 @@ if __name__ == '__main__':
         output = tokenizer.decode(output).split("### Response:")[1].strip()
         print(output)
 
+
+if __name__ == '__main__':
+    input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence:Blockware\u2019s team expects Bitcoin\u2019s adoption rate to be faster than previous technologies, but believes it's still in early-stage growth.\\xa0"
+    input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence: The compensation process is expected to start next week, starting with users who had funds on the bridge \u201cshortly before the shutdown.\u201d"
+    # evaluate(input)
+    local_evaluate(input)
     print('execute main finished')
