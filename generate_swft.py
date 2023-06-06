@@ -123,6 +123,7 @@ def evaluate(
     repetition_penalty=2.0,
     **kwargs,
 ):
+    print('evaluate execute...')
     prompt = generate_prompt(input)
     inputs = tokenizer(prompt, return_tensors="pt")
     input_ids = inputs["input_ids"].to(device)
@@ -139,6 +140,7 @@ def evaluate(
         **kwargs,
     )
     with torch.no_grad():
+        print('torch.no_grad execute...')
         if args.use_typewriter:
             for generation_output in model.stream_generate(
                 input_ids=input_ids,
@@ -157,6 +159,7 @@ def evaluate(
                 yield show_text
             yield outputs[0].split("### Response:")[1].strip().replace('�','')
         else:
+            print('model.generate execute...')
             generation_output = model.generate(
                 input_ids=input_ids,
                 generation_config=generation_config,
