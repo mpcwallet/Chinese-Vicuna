@@ -182,6 +182,7 @@ def evaluate(
 
 if __name__ == '__main__':
     input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence:Blockware\u2019s team expects Bitcoin\u2019s adoption rate to be faster than previous technologies, but believes it's still in early-stage growth.\\xa0"
+    input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence: The compensation process is expected to start next week, starting with users who had funds on the bridge \u201cshortly before the shutdown.\u201d"
     # evaluate(input)
     print('evaluate execute...')
     prompt = generate_prompt(input)
