@@ -124,9 +124,10 @@ def evaluate(
     **kwargs,
 ):
     print('evaluate execute...')
-    # prompt = generate_prompt(input)
-    # inputs = tokenizer(prompt, return_tensors="pt")
-    # input_ids = inputs["input_ids"].to(device)
+    prompt = generate_prompt(input)
+    inputs = tokenizer(prompt, return_tensors="pt")
+    input_ids = inputs["input_ids"].to(device)
+    print(input_ids)
     # generation_config = GenerationConfig(
     #     temperature=temperature,
     #     top_p=top_p,
