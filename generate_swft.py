@@ -15,7 +15,7 @@ from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_path", type=str, default="/model/13B_hf")
-parser.add_argument("--lora_path", type=str, default="checkpoint-3000")
+parser.add_argument("--lora_path", type=str, default="/kfkas/checkpoint_3000")
 parser.add_argument("--use_typewriter", type=int, default=1)
 parser.add_argument("--use_local", type=int, default=1)
 parser.add_argument("--input_jsonl", type=str)
