@@ -148,7 +148,7 @@ def local_evaluate(input):
 
 
 def removeInvalidCharacter(str):
-    return str.replace('</s>', '').replace('<s>', '')
+    return str.replace('</s>', '').replace('<s>', '').replace('.', '')
 
 if __name__ == '__main__':
     #input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence:Blockware\u2019s team expects Bitcoin\u2019s adoption rate to be faster than previous technologies, but believes it's still in early-stage growth.\\xa0"
@@ -160,7 +160,7 @@ if __name__ == '__main__':
             data = json.loads(line)
             output = local_evaluate(data['instruction'])
             total = total + 1
-            if removeInvalidCharacter(output) == data['output']:
+            if removeInvalidCharacter(output.lower()) == data['output']:
                 right = right + 1
             print('output=' + output)
             print('temp total=' + str(total))
