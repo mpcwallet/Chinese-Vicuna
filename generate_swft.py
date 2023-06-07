@@ -163,10 +163,10 @@ if __name__ == '__main__':
             if removeInvalidCharacter(output) == data['output']:
                 right = right + 1
             print('output=' + output)
-            print('temp total=' + total)
-            print('temp right=' + right)
+            print('temp total=' + str(total))
+            print('temp right=' + str(right))
 
-    print('total=' + total)
-    print('right=' + right)
-    print('right rate=' + round(right/total, 2))
+    print('total=' + str(total))
+    print('right=' + str(right))
+    print('right rate=' + str(round(float(right)/float(total), 2)))
     print('execute main finished')
