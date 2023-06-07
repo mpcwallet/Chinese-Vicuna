@@ -159,8 +159,9 @@ if __name__ == '__main__':
         for line in f:
             data = json.loads(line)
             output = local_evaluate(data['instruction'])
+            output = removeInvalidCharacter(output.lower())
             total = total + 1
-            if removeInvalidCharacter(output.lower()) == data['output']:
+            if output == data['output']:
                 right = right + 1
             print('output=' + output)
             print('temp total=' + str(total))
