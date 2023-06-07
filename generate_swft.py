@@ -162,6 +162,9 @@ if __name__ == '__main__':
             total = total + 1
             if removeInvalidCharacter(output) == data['output']:
                 right = right + 1
+            print('output=' + output)
+            print('temp total=' + total)
+            print('temp right=' + right)
 
     print('total=' + total)
     print('right=' + right)
