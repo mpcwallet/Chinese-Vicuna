@@ -6,6 +6,7 @@ import gradio as gr
 import argparse
 import warnings
 import os
+import json
 from utils import StreamPeftGenerationMixin,StreamLlamaForCausalLM
 assert (
     "LlamaTokenizer" in transformers._import_structure["models.llama"]
@@ -17,6 +18,7 @@ parser.add_argument("--model_path", type=str, default="/model/13B_hf")
 parser.add_argument("--lora_path", type=str, default="checkpoint-3000")
 parser.add_argument("--use_typewriter", type=int, default=1)
 parser.add_argument("--use_local", type=int, default=1)
+parser.add_argument("--input_jsonl", type=str)
 args = parser.parse_args()
 print(args)
 tokenizer = LlamaTokenizer.from_pretrained(args.model_path)
@@ -25,6 +27,7 @@ LOAD_8BIT = True
 BASE_MODEL = args.model_path
 LORA_WEIGHTS = args.lora_path
 
+INPUT_JSONL = args.input_jsonl
 
 # fix the path for local checkpoint
 lora_bin_path = os.path.join(args.lora_path, "adapter_model.bin")
@@ -112,74 +115,6 @@ if torch.__version__ >= "2" and sys.platform != "win32":
     model = torch.compile(model)
 
 
-def evaluate(
-    input,
-    temperature=0.1,
-    top_p=0.75,
-    top_k=40,
-    num_beams=4,
-    max_new_tokens=128,
-    min_new_tokens=1,
-    repetition_penalty=2.0,
-    **kwargs,
-):
-    print('evaluate execute...')
-    prompt = generate_prompt(input)
-    inputs = tokenizer(prompt, return_tensors="pt")
-    input_ids = inputs["input_ids"].to(device)
-    print(input_ids)
-    generation_config = GenerationConfig(
-        temperature=temperature,
-        top_p=top_p,
-        top_k=top_k,
-        num_beams=num_beams,
-        bos_token_id=1,
-        eos_token_id=2,
-        pad_token_id=0,
-        max_new_tokens=max_new_tokens, # max_length=max_new_tokens+input_sequence
-        min_new_tokens=min_new_tokens, # min_length=min_new_tokens+input_sequence
-        **kwargs,
-    )
-    print(generation_config)
-    try:
-        with torch.autocast("cuda"):
-            with torch.no_grad():
-                print('torch.no_grad execute...')
-                if args.use_typewriter:
-                    for generation_output in model.stream_generate(
-                        input_ids=input_ids,
-                        generation_config=generation_config,
-                        return_dict_in_generate=True,
-                        output_scores=False,
-                        repetition_penalty=float(repetition_penalty),
-                    ):
-                        outputs = tokenizer.batch_decode(generation_output)
-                        show_text = "\n--------------------------------------------\n".join(
-                            [output.split("### Response:")[1].strip().replace('�','')+" ▌" for output in outputs]
-                        )
-                        # if show_text== '':
-                        #     yield last_show_text
-                        # else:
-                        yield show_text
-                    yield outputs[0].split("### Response:")[1].strip().replace('�','')
-                else:
-                    print('model.generate execute...')
-                    generation_output = model.generate(
-                        input_ids=input_ids,
-                        generation_config=generation_config,
-                        return_dict_in_generate=True,
-                        output_scores=False,
-                        repetition_penalty=1.3,
-                    )
-                    output = generation_output.sequences[0]
-                    output = tokenizer.decode(output).split("### Response:")[1].strip()
-                    print(output)
-                    yield output
-    except Exception as msg:
-        print(msg)
-    else:
-        print('无异常')
-
 
 def local_evaluate(input):
     print('evaluate execute...')
@@ -209,12 +144,26 @@ def local_evaluate(input):
         )
         output = generation_output.sequences[0]
         output = tokenizer.decode(output).split("### Response:")[1].strip()
-        print(output)
+        return output
 
+
+def removeInvalidCharacter(str):
+    return str.replace('</s>', '').replace('<s>', '')
 
 if __name__ == '__main__':
-    input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence:Blockware\u2019s team expects Bitcoin\u2019s adoption rate to be faster than previous technologies, but believes it's still in early-stage growth.\\xa0"
-    input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence: The compensation process is expected to start next week, starting with users who had funds on the bridge \u201cshortly before the shutdown.\u201d"
-    # evaluate(input)
-    local_evaluate(input)
+    #input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence:Blockware\u2019s team expects Bitcoin\u2019s adoption rate to be faster than previous technologies, but believes it's still in early-stage growth.\\xa0"
+    #input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence: The compensation process is expected to start next week, starting with users who had funds on the bridge \u201cshortly before the shutdown.\u201d"
+    total=0
+    right = 0
+    with open(INPUT_JSONL, 'r', encoding='utf-8') as f:
+        for line in f:
+            data = json.loads(line)
+            output = local_evaluate(data['instruction'])
+            total = total + 1
+            if removeInvalidCharacter(output) == data['output']:
+                right = right + 1
+
+    print('total=' + total)
+    print('right=' + right)
+    print('right rate=' + round(right/total, 2))
     print('execute main finished')
