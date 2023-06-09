@@ -7,6 +7,7 @@ import argparse
 import warnings
 import os
 import json
+import pandas as pd
 from utils import StreamPeftGenerationMixin,StreamLlamaForCausalLM
 assert (
     "LlamaTokenizer" in transformers._import_structure["models.llama"]
@@ -150,24 +151,36 @@ def local_evaluate(input):
 def removeInvalidCharacter(str):
     return str.replace('</s>', '').replace('<s>', '').replace('.', '')
 
+
 if __name__ == '__main__':
     #input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence:Blockware\u2019s team expects Bitcoin\u2019s adoption rate to be faster than previous technologies, but believes it's still in early-stage growth.\\xa0"
     #input = "###-TASK-A-A-A, no matter feasibility, answer only one word, 'positive' or 'negative', by this sentence: The compensation process is expected to start next week, starting with users who had funds on the bridge \u201cshortly before the shutdown.\u201d"
-    total=0
+    total = 0
     right = 0
     with open(INPUT_JSONL, 'r', encoding='utf-8') as f:
+        out = []
         for line in f:
+            result = {}
             data = json.loads(line)
             output = local_evaluate(data['instruction'])
             output = removeInvalidCharacter(output.lower())
             total = total + 1
+            flag = 0
             if output == data['output']:
                 right = right + 1
+                flag = 1
             print('output=' + output)
             print('temp total=' + str(total))
             print('temp right=' + str(right))
+            result['instruction'] = data['instruction']
+            result['origin_output'] = data['output']
+            result['trained_output'] = output
+            result['is_right'] = str(flag)
+            out.append(result)
 
     print('total=' + str(total))
     print('right=' + str(right))
     print('right rate=' + str(round(float(right)/float(total), 2)))
+    df = pd.DataFrame(out)
+    df.to_csv('./generate_result.csv')
     print('execute main finished')
