@@ -58,9 +58,10 @@ if device == "cuda":
         torch_dtype=torch.float16,
         device_map="auto", #device_map={"": 0},
     )
-    model = StreamPeftGenerationMixin.from_pretrained(
-        model, LORA_WEIGHTS, torch_dtype=torch.float16, device_map="auto", #device_map={"": 0}
-    )
+    if LORA_WEIGHTS != "nothing":
+        model = StreamPeftGenerationMixin.from_pretrained(
+            model, LORA_WEIGHTS, torch_dtype=torch.float16, device_map="auto", #device_map={"": 0}
+        )
 elif device == "mps":
     model = LlamaForCausalLM.from_pretrained(
         BASE_MODEL,

@@ -12,20 +12,9 @@ assert (
 ), "LLaMA is now in HuggingFace's main branch.\nPlease reinstall it: pip uninstall transformers && pip install git+https://github.com/huggingface/transformers.git"
 from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--load_8bit", action="store_true", default=False)
-parser.add_argument("--model_path", type=str, default="/model/13B_hf")
-# parser.add_argument("--lora_path", type=str, default="checkpoint-3000")
-parser.add_argument("--use_typewriter", type=int, default=1)
-parser.add_argument("--use_local", type=int, default=1)
-args = parser.parse_args()
-print(args)
-tokenizer = LlamaTokenizer.from_pretrained(args.model_path)
-
-LOAD_8BIT = args.load_8bit
-BASE_MODEL = args.model_path
-# LORA_WEIGHTS = args.lora_path
-
+BASE_MODEL = "TheBloke/Wizard-Vicuna-13B-Uncensored-HF"
+LOAD_8BIT = False
+tokenizer = LlamaTokenizer.from_pretrained(BASE_MODEL)
 
 if torch.cuda.is_available():
     device = "cuda"
@@ -38,23 +27,14 @@ try:
 except:
     pass
 
-if device == "cuda":
-    model = LlamaForCausalLM.from_pretrained(
-        BASE_MODEL,
-        load_in_8bit=LOAD_8BIT,
-        torch_dtype=torch.float16,
-        device_map="auto", #device_map={"": 0},
-    )
-elif device == "mps":
-    model = LlamaForCausalLM.from_pretrained(
-        BASE_MODEL,
-        device_map={"": device},
-        torch_dtype=torch.float16,
-    )
-else:
-    model = LlamaForCausalLM.from_pretrained(
-        BASE_MODEL, device_map={"": device}, low_cpu_mem_usage=True
-    )
+
+model = LlamaForCausalLM.from_pretrained(
+    BASE_MODEL,
+    load_in_8bit=LOAD_8BIT,
+    torch_dtype=torch.float16,
+    device_map="auto", #device_map={"": 0},
+)
+
 
 
 def generate_prompt(instruction, input=None):
@@ -112,35 +92,35 @@ def evaluate(
         **kwargs,
     )
     with torch.no_grad():
-        if args.use_typewriter:
-            for generation_output in model.stream_generate(
-                input_ids=input_ids,
-                generation_config=generation_config,
-                return_dict_in_generate=True,
-                output_scores=False,
-                repetition_penalty=float(repetition_penalty),
-            ):
-                outputs = tokenizer.batch_decode(generation_output)
-                show_text = "\n--------------------------------------------\n".join(
-                    [output.split("### Response:")[1].strip().replace('�','')+" ▌" for output in outputs]
-                )
-                # if show_text== '':
-                #     yield last_show_text
-                # else:
-                yield show_text
-            yield outputs[0].split("### Response:")[1].strip().replace('�','')
-        else:
-            generation_output = model.generate(
-                input_ids=input_ids,
-                generation_config=generation_config,
-                return_dict_in_generate=True,
-                output_scores=False,
-                repetition_penalty=1.3,
-            )
-            output = generation_output.sequences[0]
-            output = tokenizer.decode(output).split("### Response:")[1].strip()
-            print(output)
-            yield output
+        # if args.use_typewriter:
+        #     for generation_output in model.stream_generate(
+        #         input_ids=input_ids,
+        #         generation_config=generation_config,
+        #         return_dict_in_generate=True,
+        #         output_scores=False,
+        #         repetition_penalty=float(repetition_penalty),
+        #     ):
+        #         outputs = tokenizer.batch_decode(generation_output)
+        #         show_text = "\n--------------------------------------------\n".join(
+        #             [output.split("### Response:")[1].strip().replace('�','')+" ▌" for output in outputs]
+        #         )
+        #         # if show_text== '':
+        #         #     yield last_show_text
+        #         # else:
+        #         yield show_text
+        #     yield outputs[0].split("### Response:")[1].strip().replace('�','')
+        # else:
+        generation_output = model.generate(
+            input_ids=input_ids,
+            generation_config=generation_config,
+            return_dict_in_generate=True,
+            output_scores=False,
+            repetition_penalty=1.3,
+        )
+        output = generation_output.sequences[0]
+        output = tokenizer.decode(output).split("### Response:")[1].strip()
+        print(output)
+        yield output
 
 
 gr.Interface(
