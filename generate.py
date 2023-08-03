@@ -24,7 +24,7 @@ tokenizer = LlamaTokenizer.from_pretrained(args.model_path)
 LOAD_8BIT = True
 BASE_MODEL = args.model_path
 LORA_WEIGHTS = args.lora_path
-if LORA_WEIGHTS != "nothing":
+if LORA_WEIGHTS == "nothing":
     LORA_WEIGHTS = "default"
 
 
