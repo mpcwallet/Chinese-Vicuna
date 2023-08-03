@@ -24,8 +24,6 @@ tokenizer = LlamaTokenizer.from_pretrained(args.model_path)
 LOAD_8BIT = True
 BASE_MODEL = args.model_path
 LORA_WEIGHTS = args.lora_path
-if LORA_WEIGHTS == "nothing":
-    LORA_WEIGHTS = "default"
 
 
 # fix the path for local checkpoint
@@ -60,9 +58,17 @@ if device == "cuda":
         torch_dtype=torch.float16,
         device_map="auto", #device_map={"": 0},
     )
-    model = StreamPeftGenerationMixin.from_pretrained(
-        model, LORA_WEIGHTS, torch_dtype=torch.float16, device_map="auto", #device_map={"": 0}
-    )
+    if LORA_WEIGHTS == "nothing":
+        model = StreamLlamaForCausalLM.from_pretrained(
+            BASE_MODEL,
+            load_in_8bit=LOAD_8BIT,
+            torch_dtype=torch.float16,
+            device_map={"": 0},
+        )
+    else:
+        model = StreamPeftGenerationMixin.from_pretrained(
+            model, LORA_WEIGHTS, torch_dtype=torch.float16, device_map="auto", #device_map={"": 0}
+        )
 elif device == "mps":
     model = LlamaForCausalLM.from_pretrained(
         BASE_MODEL,
