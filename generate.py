@@ -60,7 +60,7 @@ if device == "cuda":
     )
     if LORA_WEIGHTS == "nothing":
         model = StreamLlamaForCausalLM.from_pretrained(
-            BASE_MODEL,
+            model,
             load_in_8bit=LOAD_8BIT,
             torch_dtype=torch.float16,
             device_map={"": 0},
